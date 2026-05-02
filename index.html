@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Scratch Олимпиада</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #dbe7f5;
+}
+
+/* ===== ШАПКА ===== */
+
+.header {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    height: 14vh;
+    min-height: 80px;
+    padding: 10px 20px;
+
+    background: linear-gradient(180deg, #5fa8dc 0%, #cfdff0 100%);
+    border-bottom: 2px solid #ff9800;
+}
+
+.logo {
+    width: 140px;
+    flex-shrink: 0;
+
+    background: rgba(255,255,255,0.5);
+    padding: 6px 10px;
+    border-radius: 12px;
+    backdrop-filter: blur(4px);
+    cursor: pointer;
+}
+
+.header-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+
+    color: #1f2d3d;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+/* ===== ОСНОВА ===== */
+
+.main {
+    display: flex;
+    min-height: calc(100vh - 14vh);
+}
+
+/* ===== МЕНЮ ===== */
+
+.sidebar {
+    width: 240px;
+    background: #cfdff0;
+    border-right: 3px solid #ff9800;
+    padding: 10px;
+}
+
+.year {
+    background: #4cafef;
+    color: white;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 10px;
+    cursor: pointer;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    transition: 0.2s;
+}
+
+.year:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+
+.tour {
+    margin-left: 10px;
+    display: none;
+}
+
+.tour.active {
+    display: block;
+}
+
+.tour button {
+    width: 100%;
+    background: #6c5ce7;
+    color: white;
+    border: none;
+    padding: 8px;
+    margin: 6px 0;
+    border-radius: 8px;
+    cursor: pointer;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.tasks {
+    margin-left: 10px;
+    display: none;
+}
+
+.tasks.active {
+    display: block;
+}
+
+.tasks div {
+    cursor: pointer;
+    padding: 6px 8px;
+    margin: 3px 0;
+    border-radius: 6px;
+}
+
+.tasks div:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+.tasks div.active {
+    background: #4cafef;
+    color: white;
+}
+
+/* ===== КОНТЕНТ ===== */
+
+.content {
+    flex: 1;
+    padding: 20px;
+    background: #dbe7f5;
+}
+
+.task-card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* ===== ФИКС СПИСКОВ С КАРТИНКАМИ ===== */
+
+.task-card ol {
+    padding-left: 25px;
+}
+
+.task-card li {
+    margin-bottom: 20px;
+}
+
+.task-card li img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-top: 10px;
+    border-radius: 6px;
+}
+
+/* ===== АДАПТИВ ===== */
+
+@media (max-width: 768px) {
+
+    .header {
+        justify-content: space-between;
+    }
+
+    .header-title {
+        position: static;
+        transform: none;
+        text-align: right;
+        font-size: 16px;
+    }
+
+    .logo {
+        width: 100px;
+    }
+
+    .main {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 3px solid #ff9800;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <a href="https://vk.com/olympscratch123" target="_blank">
+        <img class="logo" src="images/logo.png">
+    </a>
+
+    <div class="header-title">
+        Scratch-олимпиада СПб<br>
+        по программированию 2-4кл
+    </div>
+</div>
+
+<div class="main">
+
+    <div class="sidebar" id="menu"></div>
+
+    <div class="content" id="content">
+        <h1>Scratch Олимпиада</h1>
+        <p>Выберите задачу слева</p>
+    </div>
+
+</div>
+
+<script>
+
+async function loadData() {
+    const years = ["2024", "2025"];
+    const result = {};
+
+    for (let year of years) {
+        const res = await fetch(`data/${year}.json`);
+        result[year] = await res.json();
+    }
+
+    return result;
+}
+
+function initMenu(data) {
+    const menu = document.getElementById("menu");
+    menu.innerHTML = "";
+
+    Object.keys(data).forEach(year => {
+
+        const yearDiv = document.createElement("div");
+        yearDiv.className = "year";
+        yearDiv.innerText = year;
+
+        const toursDiv = document.createElement("div");
+        toursDiv.className = "tour";
+
+        yearDiv.onclick = () => {
+            document.querySelectorAll(".tour").forEach(t => {
+                if (t !== toursDiv) t.classList.remove("active");
+            });
+            toursDiv.classList.toggle("active");
+        };
+
+        Object.keys(data[year]).forEach(tourNumber => {
+
+            const tourBtn = document.createElement("button");
+            tourBtn.innerText = "Тур " + tourNumber;
+
+            const tasksDiv = document.createElement("div");
+            tasksDiv.className = "tasks";
+
+            tourBtn.onclick = () => {
+                document.querySelectorAll(".tasks").forEach(t => {
+                    if (t !== tasksDiv) t.classList.remove("active");
+                });
+                tasksDiv.classList.toggle("active");
+            };
+
+            data[year][tourNumber].forEach(task => {
+
+                const taskDiv = document.createElement("div");
+                taskDiv.innerText = task.title;
+
+                taskDiv.onclick = () => {
+
+                    document.querySelectorAll(".tasks div").forEach(el => el.classList.remove("active"));
+                    taskDiv.classList.add("active");
+
+                    document.getElementById("content").innerHTML = `
+                        <div class="task-card">
+                            <h2>${task.title}</h2>
+                            <p>${task.condition}</p>
+                            <h3>Ответ:</h3>
+                            <p>${task.solution}</p>
+                        </div>
+                    `;
+                };
+
+                tasksDiv.appendChild(taskDiv);
+            });
+
+            toursDiv.appendChild(tourBtn);
+            toursDiv.appendChild(tasksDiv);
+        });
+
+        menu.appendChild(yearDiv);
+        menu.appendChild(toursDiv);
+    });
+}
+
+loadData().then(initMenu);
+
+</script>
+
+</body>
+</html>
